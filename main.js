@@ -24,7 +24,6 @@ class GameOfLife{
             for(var j = 0; j < this.size; j++){
                 var pixel = new GamePixel(j, i);
                 var pixelDiv = pixel.getDOMElement();
-                console.log(pixelDiv);
                 container.appendChild(pixelDiv);
                 pixelDiv.style.width = (1000/this.size) + "px";
                 pixelDiv.style.height = (1000/this.size) + "px";
@@ -36,12 +35,12 @@ class GameOfLife{
         console.log(elements);
     }
     elementClicked(element){
-        elements.foreach(ar => ar.filter(e => e.isSimilarElement(element).toggleCurrentState()));
+        // elements.foreach(ar => ar.filter(e => e.isSimilarElement(element).toggleCurrentState()));
         element.classList.toggle("activated");
     }
 
     displayNext(){
-
+        
     }
 
     //Counts all activated neighbour pixels.
