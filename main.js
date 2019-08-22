@@ -1,38 +1,47 @@
 
-
+const BOXSIZE = 20;
+const WIDTH = 30;
+const HEIGHT = 30;
 
 var game;
 
 function onLoad(){
-    game = new GameOfLife(50);
+    game = new GameOfLife(WIDTH, HEIGHT, BOXSIZE);
     game.initDomFields();
 }
 
 class GameOfLife{
 
-    constructor(_size){
-        this.size = _size;
+    constructor(_width, _height, _boxSize){
+        this.width = _width;
+        this.height = _height;
+        this.boxSize = _boxSize;
     }
 
     initDomFields(){
 
         var container = document.getElementById("container");
         var elements = new Array();
-
-        for(var i = 0; i < this.size; i++){
+        var templateColumnsString = "";
+        var templateRowsString = "";
+        for(var i = 0; i < this.height; i++){
+            templateRowsString += this.boxSize + "px ";
             var row = new Array();
-            for(var j = 0; j < this.size; j++){
+            for(var j = 0; j < this.width; j++){
+                if(i === 0)
+                    templateColumnsString += this.boxSize + "px ";
                 var pixel = new GamePixel(j, i);
                 var pixelDiv = pixel.getDOMElement();
                 container.appendChild(pixelDiv);
-                pixelDiv.style.width = (1000/this.size) + "px";
-                pixelDiv.style.height = (1000/this.size) + "px";
+                // pixelDiv.style.width = (1000/this.size) + "px";
+                // pixelDiv.style.height = (1000/this.size) + "px";
                 pixelDiv.onclick = e => this.elementClicked(e.toElement);
                 row[j] = pixelDiv;
             }
             elements[i] = row;
         }
-        console.log(elements);
+        container.style.gridTemplateColumns = templateColumnsString;
+        container.style.gridTemplateRows = templateRowsString;
     }
     elementClicked(element){
         // elements.foreach(ar => ar.filter(e => e.isSimilarElement(element).toggleCurrentState()));
@@ -48,7 +57,7 @@ class GameOfLife{
         var counter = 0;
         for(var i = x-1; i <= x+1; i++){
             for(var j = y-1; j <= y+1; j++){
-                if(x < 0 || y < 0 || x >= this.size || y >= this.size){
+                if(x < 0 || y < 0 || x >= this.width || y >= this.height){
                     continue;
                 }
                 if(elements[j][i].getState()){
