@@ -3,6 +3,10 @@
     margin: 0;
 }
 
+body{
+    min-width: 450px;
+}
+
 .outer{
     padding-top: 50px;
     display:flex; 
@@ -19,16 +23,21 @@ header{
     text-align: center;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 1.5px 5px 0 rgba(0, 0, 0, 0.19);
     margin-bottom: 4px;
+    min-width: 284px;
 }
 
 nav{
-    width: 50%;
+    width: 400px;
     display: flex;
     flex-direction: row;
     margin: 0 auto;
 }
 nav button{
     flex: 1;
+}
+
+nav h4{
+    margin-right: 10px;
 }
 
 body{
