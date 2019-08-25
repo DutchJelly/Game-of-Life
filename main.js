@@ -1,12 +1,29 @@
 
-const BOXSIZE = 15;
-const WIDTH = 50;
+const BOXSIZE = 10;
+const WIDTH = 100;
 const HEIGHT = 50;
 
 var game;
+var runningTimer;
 
 function start(){
-    game.displayNext();
+    if(game.isRunning) return;
+    game.isRunning = true;
+    runningTimer = setInterval(function(){
+        game.displayNext();
+    }, 40);
+}
+
+function stop(){
+    if(!game.isRunning) return;
+    game.isRunning = false;
+    clearInterval(runningTimer);
+}
+
+function reset(){
+    if(game.isRunning)
+        stop();
+    game.resetAll();
 }
 
 function onLoad(){
@@ -28,6 +45,7 @@ class GameOfLife{
     initDomFields(){
 
         var container = document.getElementById("container");
+        container.addEventListener('contextmenu', event => event.preventDefault());
         this.elements = new Array();
         var templateColumnsString = "";
         var templateRowsString = "";
@@ -40,9 +58,14 @@ class GameOfLife{
                 var pixel = new GamePixel(j, i);
                 var pixelDiv = pixel.getDOMElement();
                 container.appendChild(pixelDiv);
-                // pixelDiv.style.width = (1000/this.size) + "px";
-                // pixelDiv.style.height = (1000/this.size) + "px";
                 pixelDiv.onclick = e => this.elementClicked(e.toElement);
+                pixelDiv.addEventListener("mouseover", (e) => {
+                    if(e.buttons == 1 || e.buttons == 3){
+                        this.elementClicked(e.toElement);
+                    }
+                        
+                });
+                pixelDiv.onmousedown = e => e.preventDefault();
                 row[j] = pixel;
             }
             this.elements[i] = row;
@@ -50,6 +73,30 @@ class GameOfLife{
         container.style.gridTemplateColumns = templateColumnsString;
         container.style.gridTemplateRows = templateRowsString;
     }
+
+    ensureState(element, newState){
+        if(this.isRunning) return;
+        this.elements.forEach(function(ar){
+            ar.filter(e => {
+                if(e.isSimilarElement(element))
+                    e.state = newState
+                    e.futureState = e.state;
+            })
+        });
+        if((newState && !element.classList.contains("activated")) ||
+        (!newState && element.classList.contains("activated")))
+            element.classList.toggle("activated");
+    }
+
+    resetAll(){
+        this.elements.forEach((x) => {
+            x.forEach((y) => {
+                y.reset();
+                y.setDisplay();
+            });
+        });
+    }
+
     elementClicked(element){
         if(this.isRunning) return;
         this.elements.forEach(function(ar){
@@ -83,12 +130,9 @@ class GameOfLife{
 
         //Display all the changed states.
         this.elements.forEach(x => x.forEach(y => {
-            y.goNextState();
-            var element = y.getDOMElement();
-            if((y.getState() && !element.classList.contains("activated")) ||
-            (!y.getState() && element.classList.contains("activated")))
-            {
-                element.classList.toggle("activated");
+            if(y.futureState != y.state){ //This check is important for performance.
+                y.goNextState();
+                y.setDisplay();
             }
         }));
     }
@@ -122,6 +166,7 @@ class GamePixel{
         this.y = _y;
         this.state = false;
         this.futureState = this.state;
+        this.element = undefined;
     }
 
     toggleCurrentState(){
@@ -144,26 +189,48 @@ class GamePixel{
         this.futureState = this.state;
     }
 
-    //Creates a new DOM element or gets it from the html.
+    reset(){
+        this.state = false;
+        this.futureState = false;
+    }
+
     getDOMElement(){
-        var existing = this.getExistingElement();        
-        if(existing !== undefined) {
-            return existing;
+        if(this.element !== undefined){
+            return this.element;
         }
         var newElement = document.createElement("div");
         newElement.className = "game-pixel " + "x=" + this.x + " y=" + this.y;
+        this.element = newElement;
         return newElement;
     }
 
-    //Attempts to get the existing element that's added to the html.
-    getExistingElement(){
-        var container = document.getElementById("container");
-        for(var i = 0; i < document.getElementById("container").children.length; i++){
-            if(this.isSimilarElement(container.children[i]))
-                return container.children[i];
-        }
-        return undefined;
+    setDisplay(){
+        var pElem = this.getDOMElement();
+        if((this.state && !pElem.classList.contains("activated")) ||
+        (!this.state) && pElem.classList.contains("activated"))
+            pElem.classList.toggle("activated"); 
     }
+
+    //Creates a new DOM element or gets it from the html.
+    // getDOMElement(){
+    //     var existing = this.getExistingElement();        
+    //     if(existing !== undefined) {
+    //         return existing;
+    //     }
+    //     var newElement = document.createElement("div");
+    //     newElement.className = "game-pixel " + "x=" + this.x + " y=" + this.y;
+    //     return newElement;
+    // }
+
+    //Attempts to get the existing element that's added to the html.
+    // getExistingElement(){
+    //     var container = document.getElementById("container");
+    //     for(var i = 0; i < document.getElementById("container").children.length; i++){
+    //         if(this.isSimilarElement(container.children[i]))
+    //             return container.children[i];
+    //     }
+    //     return undefined;
+    // }
 
     //All properties match.
     isElement(element){

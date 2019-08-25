@@ -53,7 +53,7 @@ body{
 }
 
 .game-pixel{
-    background-color: transparent;
+    background-color: white;
     border: 0.1px dotted black;
     margin: -0.1px;
 }
